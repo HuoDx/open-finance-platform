@@ -1,0 +1,4 @@
+Here are all articles/resources that provides help to this project.
+
+[1] https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
+[2] https://docs.python.org/3/library/typing.html

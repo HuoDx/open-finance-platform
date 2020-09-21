@@ -1,33 +1,48 @@
 import time
-
-class RevenueDataException(Exception):
-    pass
-
-class FinanceEventType:
-    REVENUE = 0
-    COST = 1
-    
+from datetime import datetime
 class FinanceData:
-    def __init__(self, amount, timestamp, description = '', evidence_url = '', event_type = FinanceEventType.REVENUE):
+    SQL_TABLE_NAME = 'financial_data'
+    def __init__(self, amount: int, timestamp: datetime, tags = [], description = ''):
         """
-        timestamp is the number obtained by `time.time()`
+        timestamp is the datetime object obtained by `datetime.datetime.now()`
         amount is the amount identified with revenue (+) and cost (-)
         """
         self.amount = amount
         self.timestamp = timestamp
-        self.formatted_time = time.asctime(time.localtime(timestamp))
+        self.formatted_time = self.timestamp.strftime("%m/%d/%Y, %H:%M:%S")
+        self.tags = tags
         self.description = description
-        self.evidence_url = evidence_url
-        self.event_type = event_type
         
     def to_object(self):
         return {
             'amount': self.amount,
             'timestamp': self.formatted_time,
             'description': self.description,
-            'evidence_url': self. evidence_url,
-            'event_type': self. event_type
+            'tags': self.tags
         }
+        
+    def __repr__(self):
+        return '| %s | %s | %s | %s | \n'%(
+            self.amount,
+            self.formatted_time,
+            self.description,
+           ', '.join(self.tags)
+        )
+    def to_sql(self, cursor):
+        cursor.execute('INSERT INTO financial_data VALUES(%s, %s, %s, %s);', 
+                       (self.amount,
+                       self.timestamp,
+                       self.tags,
+                       self.description)
+        )
+    @classmethod
+    def from_sql(cls, sql_result):
+        return FinanceData(
+            sql_result[0],
+            sql_result[1],
+            sql_result[2],
+            sql_result[3]
+            )
     
 
 

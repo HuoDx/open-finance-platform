@@ -7,75 +7,92 @@
     <title>Financial Data</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mdui@1.0.0/dist/css/mdui.min.css" />
     <style>
-    .statistics-layout {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      justify-content: center;
-    }
-    .stats-card {
-      margin-left: 8px;
-      margin-right: 8px;
-      padding: 8px;
-      width: 100px;
-      height: 100px;
-      text-align: center;
-      align-items: center;
-    }
-    .head-container {
-      margin: 0;
-      margin-bottom: 24px;
-      padding-bottom: 16px;
-    }
-
+        .statistics-layout {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .stats-card {
+            margin-left: 8px;
+            margin-right: 8px;
+            padding: 8px;
+            width: 100px;
+            height: 100px;
+            text-align: center;
+            align-items: center;
+        }
+        
+        .head-container {
+            margin: 0;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+        }
+        
+        .tag-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-end;
+        }
+        
+        .mdui-chip {
+            margin: 4px;
+            height: 30px;
+        }
+        
+        @media(max-width: 720px) {
+            .mdui-toolbar {
+                height: auto;
+                flex-direction: column;
+                padding: 8px
+            }
+        }
     </style>
 </head>
 
 <body>
-    <div class="mdui-shadow-2 head-container">
-      <div class="mdui-toolbar ">
-          <a href="javascript:;" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">menu</i></a>
-          <span class="mdui-typo-title">Open Finance Data</span>
-          <div class="mdui-toolbar-spacer"></div>
-          <a href="/" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">refresh</i></a>
-      </div>
-      <div class="statistics-layout">
 
-          <div class="mdui-card stats-card">
-            <p>Total Revenue</p>
-            <p>1000</p>
-          </div>
+    <div class="mdui-appbar">
+        <div class="mdui-toolbar mdui-color-theme">
+            <a href="javascript:;" class="mdui-typo-headline">Open Financial Data</a>
+            <div class="mdui-toolbar-spacer"></div>
 
-          <div class="mdui-card stats-card">
-            <p>Total Cost</p>
-            <p>1000</p>
-          </div>
 
-      </div>
+            <div class="mdui-textfield mdui-textfield-expandable">
+                <button class="mdui-textfield-icon mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">search</i></button>
+                <input class="mdui-textfield-input" type="text" placeholder="Search" />
+                <button class="mdui-textfield-close mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">close</i></button>
+            </div>
+        </div>
     </div>
     <div class="mdui-panel" mdui-panel>
-      {% for finance_object in data_object['finance_objects'] %}
         <div class="mdui-panel-item">
             <div class="mdui-panel-item-header">
-                <div class="mdui-panel-item-title">{{finance_object['amount'] / 100.0}} CNY</div>
-                <div class="mdui-panel-item-summary">Date: {{finance_object['timestamp'] }}</div>
+                <div class="mdui-panel-item-title">10 CNY</div>
+                <div class="mdui-panel-item-summary">Date: xx</div>
                 <i class="mdui-panel-item-arrow mdui-icon material-icons">keyboard_arrow_down</i>
             </div>
             <div class="mdui-panel-item-body">
-
-                {% if finance_object['description'] == '' %}
                 <p>An auto-generated revenue event</p>
-                {% else %}
-                <p>{{finance_object['description']}}</p>
-                {% endif %}
 
+                <div class="tag-container">
+                    <div class="mdui-chip">
+                        <span class="mdui-chip-title">Example Chip</span>
+                    </div>
+                    <div class="mdui-chip">
+                        <span class="mdui-chip-title">Example Chip</span>
+                    </div>
+                    <div class="mdui-chip">
+                        <span class="mdui-chip-title">Example Chip</span>
+                    </div>
+                </div>
                 <div class="mdui-panel-item-actions">
                     <button class="mdui-btn mdui-ripple" mdui-panel-item-close>close</button>
-                    <a class="mdui-btn mdui-btn-raised mdui-ripple" href="/">Download evidence</a>
                 </div>
             </div>
         </div>
-      {% endfor %}
+
     </div>
     <script src="https://cdn.jsdelivr.net/npm/mdui@1.0.0/dist/js/mdui.min.js"></script>
 </body>
