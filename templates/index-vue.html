@@ -59,31 +59,27 @@
             <p>1000</p>
           </div>
 
+          <div class="mdui-card stats-card">
+            <p>Retained</p>
+            <p>1000</p>
+          </div>
+
       </div>
     </div>
     <div class="mdui-panel" mdui-panel>
-      {% for finance_object in data_object['finance_objects'] %}
         <div class="mdui-panel-item">
             <div class="mdui-panel-item-header">
-                <div class="mdui-panel-item-title">{{finance_object['amount'] / 100.0}} CNY</div>
-                <div class="mdui-panel-item-summary">Date: {{finance_object['timestamp'] }}</div>
+                <div class="mdui-panel-item-title">128 CNY</div>
+                <div class="mdui-panel-item-summary">Date: 2020-9-25</div>
                 <i class="mdui-panel-item-arrow mdui-icon material-icons">keyboard_arrow_down</i>
             </div>
             <div class="mdui-panel-item-body">
-
-                {% if finance_object['description'] == '' %}
-                <p>An auto-generated revenue event</p>
-                {% else %}
-                <p>{{finance_object['description']}}</p>
-                {% endif %}
-
+                <p>Description</p>
                 <div class="mdui-panel-item-actions">
                     <button class="mdui-btn mdui-ripple" mdui-panel-item-close>close</button>
-                    <a class="mdui-btn mdui-btn-raised mdui-ripple" href="/">Download evidence</a>
                 </div>
             </div>
         </div>
-      {% endfor %}
       <input type="date" id="d"></input>
       <p class="bottom-page-navigator">
       <a href='/'>1</a>
@@ -94,6 +90,8 @@
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha256/0.9.0/sha256.min.js" integrity="sha512-szJ5FSo9hEmXXe7b5AUVtn/WnL8a5VofnFeYC2i2z03uS2LhAch7ewNLbl5flsEmTTimMN0enBZg/3sQ+YOSzQ==" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/mdui@1.0.0/dist/js/mdui.min.js"></script>
+    <!-- development version, includes helpful console warnings -->
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script>
     (async () => {
 
@@ -126,12 +124,14 @@
       console.log(statsJson)
 
       jsonResponse = await jsonFetch('/api/take-challenge')
-      
+      console.log('Challenge taken.')
       console.log(jsonResponse)
+      console.log('mining...')
       var nonce = await mine(examineBuilder(5), sha256, jsonResponse.result)
+      console.log('solved.')
       console.log(nonce)
       console.log(sha256(jsonResponse.result + nonce))
-      
+      console.log('fetching data...')
       allDataJson = await jsonFetch(`/api/poll/${jsonResponse.result}/${nonce}`)
       console.log(allDataJson.result)
 

@@ -38,6 +38,8 @@ class TagFilter(IFilter):
             'identifier': self.IDENTIFIER,
             'tag-name': self.tag_name
         }
+    def __repr__(self):
+        return '< filter tag name = "%s" >'%self.tag_name
 
     @classmethod
     def from_object(cls, data_object: dict):
@@ -70,16 +72,26 @@ class KeyWordFilter(IFilter):
     @classmethod
     def from_object(cls, data_object: dict):
         return KeyWordFilter(data_object.get('key-words'))
+    
+    def __repr__(self):
+        return '< filter keywords in {%s} >'%', '.join(self.key_words)
 
 class DateRangeFilter(IFilter):
     
     IDENTIFIER = 'DRF'
     
     def __init__(self, date_from, date_to):
+        
+        if date_from is None:
+            date_from = 0.0
+        if date_to is None:
+            date_to = time.time() * 1.28
+            
         if type(date_from) == float:
             self.date_from = date_from
         else:
             self.date_from = time.mktime(datetime.datetime.strptime(date_from, "%Y-%m-%d").timetuple())
+        
         if type(date_to) == float:
             self.date_to = date_to
         else:
@@ -105,7 +117,8 @@ class DateRangeFilter(IFilter):
     @classmethod
     def from_object(cls, data_object: dict):
         return DateRangeFilter(data_object.get('date-from'),data_object.get('date-to'),)
-
+    def __repr__(self):
+        return '< filter date from "%s" to "%s" >'%(time.strftime("%Y-%m-%d", time.localtime(self.date_from)), time.strftime("%Y-%m-%d", time.localtime(self.date_to)))
 class ComposedFilter(IFilter):
     _filter_function_factory = {
         TagFilter.IDENTIFIER: TagFilter.from_object,
@@ -136,3 +149,11 @@ class ComposedFilter(IFilter):
         for serialized_filter in data_object.get('serialized-filters'):
             deserialized_filters.append(cls._filter_function_factory.get(serialized_filter.get('identifier'))(serialized_filter))
         return ComposedFilter(deserialized_filters)
+    
+    def __repr__(self):
+        res = "<-- composed filter begin -->"
+        for f in self._internal_filters:
+            res += '\n' + str(f)
+        res += '\n'+'<-- compose filter end   -->'
+        return res
+        

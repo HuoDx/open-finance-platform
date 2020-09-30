@@ -2,6 +2,7 @@ from flask import session, request, jsonify, Blueprint
 from search_engine.filters import ComposedFilter
 import os
 from hashlib import sha256
+from search_engine.filter_parser import parse
 from data.data_interactive_layer import obtain_all_data, obtain_stats
 
 backend_blueprint = Blueprint('backend_blueprint', __name__)
@@ -61,4 +62,12 @@ def poll_data(challenge, nonce):
         'result': [_.to_object() for _ in filtered_content],
     })
     
-
+@backend_blueprint.route('/update-filter', methods=['POST'])
+def update_filter():
+    filter_string = request.form.get('filter-string','')
+    composed_filter: ComposedFilter = parse(filter_string)
+    session['serialized-filter'] = composed_filter.to_object()
+    return jsonify({
+        'status': 0,
+    })
+    
