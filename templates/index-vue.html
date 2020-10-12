@@ -5,88 +5,249 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Financial Data</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mdui@1.0.0/dist/css/mdui.min.css" />
+    <link href="https://cdn.jsdelivr.net/gh/mt-theme/metron-assets@1.2.9/metron/css/fonts.css?family=Poppins:300,400,500,600,700" rel="stylesheet">
     <style>
-    .statistics-layout {
+    html, body {
+      margin: 0;
+      background-color: #f5fafd;
+      font-family: Poppins, Helvetica, sans-serif;
+    }
+    .item-list {
+        list-style: none;
+        padding: 0;
+    }
+    .container {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .search-container {
+      display: flex;
+      justify-content: center;
+      background-color: white;
+      
+    }
+    .search-textfield-container {
+      min-width: 80vw;
       display: flex;
       flex-direction: row;
+      padding: 4px;
+      border-radius: 4px;
       align-items: center;
+    }
+    .search-textfield {
+      padding: 16px;
+
+    }
+
+    .item-list-container {
+      width: 80vw;
+    }
+    .financial-record {
+      margin-top: 8px;
+      flex-direction: row;
+      display: flex;
+    }
+    .tags {
+      display: flex;
+      flex-direction: row;
+      background-color: #eaeaea5e;
+      border-radius: 1000px;
+      padding-left: 2px;
+    }
+    .diagonal-bg:after {
+      content: ' ';
+      width: 200%;
+      height: 1000px;
+      position: absolute;
+      z-index: 1;
+      top: 0;
+      left: 45%;
+      -webkit-transform: rotate(20deg);
+      transform: rotate(20deg);
+      background-color: #fff;
+    }
+    .diagonal-bg:before {
+      content: ' ';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 1;
+    }
+
+    .diagonal-bg-revenue:before {
+      background-color: rgba(29, 201, 183, 0.15);
+      pointer-events: none;
+    }
+
+    .diagonal-bg-revenue {
+      border-bottom: 3px solid rgba(29, 201, 183, 0.5);
+    }
+
+    .diagonal-bg-cost:before {
+      background-color: rgba(253, 57, 122, 0.15);
+      pointer-events: none;
+    }
+    .diagonal-bg-cost {
+      border-bottom: 3px solid rgba(253, 57, 122, 0.5);
+    }
+
+    .diagonal-bg{
+      background-color: white;
+      width: 55%;
+    }
+    @media(max-width: 720px) {
+      .diagonal-bg{
+
+      width: 100%;
+    }
+    }
+    .mdui-card {
+      border-radius: 11px;
+      
+    }
+    .mdui-card-primary-content {
+      margin-bottom: 8px;
+      width: 64%;
+    }
+    .end-banner {
+
+      font-size: 1.2em;
+      margin-bottom: 48px;
+    }
+    .stats-card-container {
+      display: flex;
+      flex-direction: row;
       justify-content: center;
+      flex-wrap: wrap;
+      margin: 8px;
     }
     .stats-card {
-      margin-left: 8px;
-      margin-right: 8px;
-      padding: 8px;
-      width: 100px;
-      height: 100px;
-      text-align: center;
-      align-items: center;
+        margin: 8px;
+        width: 40vw;
     }
-    .head-container {
-      margin: 0;
-      margin-bottom: 24px;
-      padding-bottom: 16px;
+    .stats-revenue {
+      border-bottom: 3px solid rgb(0 255 0 / 55%);
+      background-color: rgb(0 255 0 / 14%);
     }
-    .bottom-page-navigator {
-      display: flex;
-      flex-direction: row;
-      justify-content: center;
+    .stats-cost {
+      border-bottom: 3px solid rgb(255 67 67 / 55%);
+      background-color:rgb(255 67 67 / 14%);
     }
-    a {
-      margin-left: 4px;
-      margin-right: 4px;
+    .stats-retained {
+      border-bottom: 3px solid rgb(242 102 255 / 55%);
+      background-color: rgb(242 102 255 / 14%);
+    }
+    .stats-liquidity {
+      border-bottom: 3px solid rgb(255 195 0 / 55%);
+      background-color: rgb(255 195 0 / 14%);
+    }
+    .mdui-card-primary-title {
+      font-size: 1.6em;
     }
     </style>
+
 </head>
 
-<body>
-    <div class="mdui-shadow-2 head-container">
-      <div class="mdui-toolbar ">
-          <a href="javascript:;" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">menu</i></a>
-          <span class="mdui-typo-title">Open Finance Data</span>
-          <div class="mdui-toolbar-spacer"></div>
-          <a href="/" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">refresh</i></a>
-      </div>
-      <div class="statistics-layout">
+<body class="mdui-theme-layout-auto mdui-theme-primary-amber">
+    <div class="container" id="appAnchor">
+      <h1>Open Finance Platform</h1>
 
-          <div class="mdui-card stats-card">
-            <p>Total Revenue</p>
-            <p>1000</p>
+      <div class="stats-card-container" v-bind="statsRecord">
+        <div class="mdui-card stats-card stats-revenue">
+          <div class="mdui-card-primary">
+            <decent-money-number v-bind:value="statsRecord.totalRevenueCent"></decent-money-number>
+            <div class="mdui-card-primary-content">Total Revenue</div>
           </div>
-
-          <div class="mdui-card stats-card">
-            <p>Total Cost</p>
-            <p>1000</p>
-          </div>
-
-          <div class="mdui-card stats-card">
-            <p>Retained</p>
-            <p>1000</p>
-          </div>
-
-      </div>
-    </div>
-    <div class="mdui-panel" mdui-panel>
-        <div class="mdui-panel-item">
-            <div class="mdui-panel-item-header">
-                <div class="mdui-panel-item-title">128 CNY</div>
-                <div class="mdui-panel-item-summary">Date: 2020-9-25</div>
-                <i class="mdui-panel-item-arrow mdui-icon material-icons">keyboard_arrow_down</i>
-            </div>
-            <div class="mdui-panel-item-body">
-                <p>Description</p>
-                <div class="mdui-panel-item-actions">
-                    <button class="mdui-btn mdui-ripple" mdui-panel-item-close>close</button>
-                </div>
-            </div>
         </div>
-      <input type="date" id="d"></input>
-      <p class="bottom-page-navigator">
-      <a href='/'>1</a>
-      <a href='/'>2</a>
-      <a href='/'>3</a>
-      <a href='/'>4</a>
-      </p>
+        <div class="mdui-card stats-card stats-cost">
+          <div class="mdui-card-primary">
+            <decent-money-number v-bind:value="statsRecord.totalCostCent"></decent-money-number>
+            <div class="mdui-card-primary-content">Total Revenue</div>
+          </div>
+        </div>
+        
+        <div class="mdui-card stats-card stats-retained">
+          <div class="mdui-card-primary">
+            <decent-money-number v-bind:value="statsRecord.totalRevenueCent - statsRecord.totalCostCent"></decent-money-number>
+            <div class="mdui-card-primary-content">Total Revenue</div>
+          </div>
+        </div>
+        
+        <div class="mdui-card stats-card stats-liquidity">
+          <div class="mdui-card-primary">
+            <div class="mdui-card-primary-title">￥{{Math.round(((statsRecord.totalRevenueCent / statsRecord.totalCostCent) + Number.EPSILON) * 100) / 100}}</div>
+            <div class="mdui-card-primary-content">Liquidity</div>
+          </div>
+        </div>
+
+
+      </div>
+      <div>
+      <div class="search-container">
+        <div class="mdui-textfield search-textfield-container mdui-shadow-4">
+          <input class="mdui-textfield-input search-textfield" type="text" placeholder="Search Finance Data"/>
+          <button class="mdui-btn mdui-btn-dense mdui-ripple">SEARCH</button>
+        </div>
+      </div>
+      </div>
+      <div class="item-list-container">
+      <ul class="item-list">
+        <div v-for="record in recordList" >
+          <li class="financial-record" v-if="record.amount > 0">
+            <div class="mdui-card diagonal-bg diagonal-bg-revenue"  v-if="record.amount > 0">
+              <div class="mdui-card-media">
+                <div class="">
+                  <div class="mdui-card-primary">
+                    <decent-money-number v-bind:value="record.amount"></decent-money-number>
+                    <div class="mdui-card-primary-subtitle">{{record.timestamp.replaceAll('/','-')}}</div>
+                    <div class="mdui-card-primary-content">{{record.description}}</div>
+                    <div class="tags">
+                      <div class="mdui-chip" v-for="tag in record.tags">
+                        <span class="mdui-chip-title">{{tag}}</span>
+                        <span class="mdui-chip-title" style="opacity: 0;" v-if="record.tags.length < 1"></span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mdui-card-actions">
+                    
+                  </div>
+                </div>
+              </div>
+            </div>
+          </li>
+
+          <li class="financial-record" style="justify-content: flex-end" v-else>
+            <div class="mdui-card diagonal-bg diagonal-bg-cost">
+              <div class="mdui-card-media">
+                <div class="">
+                  <div class="mdui-card-primary">
+                    <div class="mdui-card-primary-title">￥{{record.amount / 100}}</div>
+                    <div class="mdui-card-primary-subtitle">{{record.timestamp}}</div>
+                    <div class="mdui-card-primary-content">{{record.description}}</div>
+                    <div class="tags">
+                      <div class="mdui-chip" v-for="tag in record.tags">
+                        <span class="mdui-chip-title">{{tag}}</span>
+                      </div>
+                      <span class="mdui-chip-title" style="opacity: 0;" v-if="record.tags.length < 1"></span>
+                    </div>
+                  </div>
+                  <div class="mdui-card-actions">
+                    <!--button class="mdui-btn mdui-ripple mdui-ripple-white">action 1</button-->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </li>
+        </div>
+      </ul>
+      </div>
+      <div class="end-banner" v-if="atBottom" v-bind="dataSize"> - That's all, {{dataSize}} records in total. -</div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha256/0.9.0/sha256.min.js" integrity="sha512-szJ5FSo9hEmXXe7b5AUVtn/WnL8a5VofnFeYC2i2z03uS2LhAch7ewNLbl5flsEmTTimMN0enBZg/3sQ+YOSzQ==" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/mdui@1.0.0/dist/js/mdui.min.js"></script>
@@ -120,6 +281,7 @@
         return jsonResponse
       }
 
+      
       statsJson = await jsonFetch(`/api/stats`)
       console.log(statsJson)
 
@@ -133,8 +295,54 @@
       console.log(sha256(jsonResponse.result + nonce))
       console.log('fetching data...')
       allDataJson = await jsonFetch(`/api/poll/${jsonResponse.result}/${nonce}`)
+      stats = await jsonFetch(`/api/stats`)
+      var resultList = allDataJson.result;
+      console.log(stats)
+      var maskNumber = 32;
       console.log(allDataJson.result)
+      console.log(`${allDataJson.result.length} records in total.`)
+      var maskedList = resultList.slice(0,maskNumber);
 
+      var vapp;
+
+      window.addEventListener('scroll', function(ev) {
+          if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 48) {
+              // at the bottom of the page
+              console.log('bottom')
+              maskNumber += 16;
+              if(maskNumber > resultList.length) {
+                Vue.set(vapp, 'atBottom', true);
+                Vue.set(vapp, 'dataSize', resultList.length);
+              }
+              Vue.set(vapp, 'recordList', resultList.slice(0,maskNumber));
+
+          }
+      })
+      Vue.component('decent-money-number', {
+        props: ['value'],
+        methods: {
+          floatRound: function (amount) {
+            return Math.round((amount + Number.EPSILON) * 100) / 100;
+          }
+        },
+        template: `
+          <div class="mdui-card-primary-title" v-if="Math.abs(value / 100) < 1024">￥{{value / 100}}</div>
+          <div class="mdui-card-primary-title" v-else-if="Math.abs(value / 100) < 1048576">￥ {{floatRound(value / (100 * 1000))}} k</div>
+          <div class="mdui-card-primary-title" v-else>￥ {{floatRound(value / (100 * 1000 * 1000))}} m</div>
+        `
+      });
+      vapp = new Vue({
+        el: "#appAnchor",
+        data: {
+          recordList: resultList.slice(0,maskNumber),
+          atBottom: false,
+          dataSize: resultList.length,
+          statsRecord: stats
+        }
+      });
+
+      
+      
       
     })();
     </script>

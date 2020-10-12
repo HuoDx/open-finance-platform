@@ -83,4 +83,5 @@ filt_b_time, =plt.plot(scales, filter_b_time, color='blue', label='1 filter')
 plt.legend(handles=[gen_time, filt_a_time, filt_b_time])
 plt.xlabel('Number of Unfiltered Rows')
 plt.ylabel('Processing Time (ms)')
+
 plt.show()

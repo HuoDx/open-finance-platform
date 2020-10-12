@@ -16,10 +16,10 @@ def get_result_from_parser(value, parser, stop = ';'):
         
         if c == stop:
             if dump_mode == True:
-                print('dump', ans)
+                # print('dump', ans)
                 return ans
             else:
-                print('buffer content: ', ''.join(buff))
+                # print('buffer content: ', ''.join(buff))
                 buff = []
         else:
                 
@@ -29,7 +29,7 @@ def get_result_from_parser(value, parser, stop = ';'):
                 buff.append(c)
             
         if ''.join(buff) == parser:
-            print('trigger dump', buff)
+            # print('trigger dump', buff)
             dump_mode = True
             buff = []
     return None
@@ -39,7 +39,7 @@ def parse(filter_string: str):
     result_filter = ComposedFilter()
     
     keywords_result:str = get_result_from_parser(filter_string, keywords_parser)
-    print('DEBUG', keywords_result)
+    # print('DEBUG', keywords_result)
     if keywords_result is not None:
         # start parsing keywords to construct the filter
         keywords = keywords_result.split(',')
@@ -47,7 +47,7 @@ def parse(filter_string: str):
         result_filter.add_filter(keyword_filter)
     
     tag_result:str = get_result_from_parser(filter_string, tag_parser)
-    print('DEBUG', tag_result)
+    # print('DEBUG', tag_result)
     if tag_result is not None:
         tag_filter = TagFilter(tag_result)
         result_filter.add_filter(tag_filter)

@@ -3,7 +3,7 @@ from search_engine.filters import ComposedFilter
 import os
 from hashlib import sha256
 from search_engine.filter_parser import parse
-from data.data_interactive_layer import obtain_all_data, obtain_stats
+from data.data_interactive_layer import obtain_all_data, obtain_stats, obtain_tags
 
 backend_blueprint = Blueprint('backend_blueprint', __name__)
 
@@ -34,8 +34,8 @@ def take_challenge():
 def stats():
     total_cost, total_revenue = obtain_stats()
     return jsonify({
-        'total-revenue-cent': total_revenue,
-        'total-cost-cent': total_cost
+        'totalRevenueCent': total_revenue,
+        'totalCostCent': total_cost
     })
 
 @backend_blueprint.route('/api/poll/<challenge>/<nonce>', methods = ['GET'])
@@ -69,5 +69,12 @@ def update_filter():
     session['serialized-filter'] = composed_filter.to_object()
     return jsonify({
         'status': 0,
+    })
+
+@backend_blueprint.route('/api/tags', methods = ['GET'])
+def get_tags():
+    return jsonify({
+        'status': 0,
+        'result': obtain_tags()
     })
     
