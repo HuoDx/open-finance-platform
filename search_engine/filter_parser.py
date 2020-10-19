@@ -2,37 +2,53 @@ from search_engine.filters import ComposedFilter, KeyWordFilter, TagFilter, Date
 
 import re
 
-keywords_parser = 'Keywords:'
-tag_parser = 'Tag:'
-date_from_parser = 'From:'
-date_to_parser = 'To:'
+# Legacy version.
+# keywords_parser = 'Keywords:'
+# tag_parser = 'Tag:'
+# date_from_parser = 'From:'
+# date_to_parser = 'To:'
 
-def get_result_from_parser(value, parser, stop = ';'):
-    buff = []
-    ans = ""
-    value = value.replace(' ', '')
-    dump_mode = False
-    for c in value:
+# def get_result_from_parser(value, parser, stop = ';'):
+#     buff = []
+#     ans = ""
+#     value = value.replace(' ', '')
+#     dump_mode = False
+#     for c in value:
         
-        if c == stop:
-            if dump_mode == True:
-                # print('dump', ans)
-                return ans
-            else:
-                # print('buffer content: ', ''.join(buff))
-                buff = []
-        else:
+#         if c == stop:
+#             if dump_mode == True:
+#                 # print('dump', ans)
+#                 return ans
+#             else:
+#                 # print('buffer content: ', ''.join(buff))
+#                 buff = []
+#         else:
                 
-            if dump_mode == True:
-                ans += c
-            else:
-                buff.append(c)
+#             if dump_mode == True:
+#                 ans += c
+#             else:
+#                 buff.append(c)
             
-        if ''.join(buff) == parser:
-            # print('trigger dump', buff)
-            dump_mode = True
-            buff = []
-    return None
+#         if ''.join(buff) == parser:
+#             # print('trigger dump', buff)
+#             dump_mode = True
+#             buff = []
+#     return None
+import re
+keywords_parser = re.compile('Keywords: ([^;]*);')
+tag_parser = re.compile('Tag: ([^;]*);')
+date_from_parser = re.compile('From: ([^;]*);')
+date_to_parser = re.compile('To: ([^;]*);')
+
+def get_result_from_parser(value, parser):
+    result = parser.findall(value)
+    if len(result) > 0:
+        # return the last match to make it more logically rubust
+        return result[-1]
+    else:
+        return None
+    
+
 
 def parse(filter_string: str):
     global keywords_parser, tag_parser, date_from_parser, date_to_parser

@@ -8,6 +8,7 @@ server.secret_key = Server.session_secret
 
 if __name__ == '__main__':
     # TODO: register all blueprints here
+    
     server.register_blueprint(app_blueprint)
     server.register_blueprint(backend_blueprint)
     server.run(
