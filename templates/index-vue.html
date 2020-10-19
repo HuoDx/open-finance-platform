@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Financial Data</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mdui@1.0.0/dist/css/mdui.min.css" />
     <link href="https://cdn.jsdelivr.net/gh/mt-theme/metron-assets@1.2.9/metron/css/fonts.css?family=Poppins:300,400,500,600,700" rel="stylesheet">
     <style>
@@ -28,14 +27,15 @@
       display: flex;
       justify-content: center;
       background-color: white;
-      
+      border-top-right-radius: 8px;
+      border-top-left-radius: 8px;
     }
     .search-textfield-container {
       min-width: 80vw;
       display: flex;
       flex-direction: row;
       padding: 4px;
-      border-radius: 4px;
+      
       align-items: center;
     }
     .search-textfield {
@@ -150,6 +150,42 @@
     .mdui-card-primary-title {
       font-size: 1.6em;
     }
+    .mdui-container {
+      padding: 0;
+      width: 100%;
+    }
+    .mdui-panel-item {
+      border-bottom-right-radius: 8px;
+      border-bottom-left-radius: 8px;
+    }
+    .mdui-switch {
+      margin-right: 4px;
+    }
+    .loading-cover {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow-y: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: white;
+      z-index: 320;
+    }
+    .mdui-switch {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+    }
+    .mdui-switch-icon {
+      margin-right: 8px;
+    }
+    .filter-container {
+      margin: 8px;
+    }
     </style>
 
 </head>
@@ -185,17 +221,58 @@
             <div class="mdui-card-primary-content">Liquidity</div>
           </div>
         </div>
-
+        
 
       </div>
-      <div>
-      <div class="search-container">
-        <div class="mdui-textfield search-textfield-container mdui-shadow-4">
-          <input class="mdui-textfield-input search-textfield" type="text" placeholder="Search Finance Data"/>
-          <button class="mdui-btn mdui-btn-dense mdui-ripple">SEARCH</button>
+
+      <div class="mdui-shadow-4px">
+        <div class="search-container">
+          <div class="mdui-textfield search-textfield-container mdui-shadow-0">
+            <input v-on:change="updateSearchBar()" v-model="inputBarContent" class="mdui-textfield-input search-textfield" type="text" placeholder="Search Finance Data"/>
+            <button class="mdui-btn mdui-btn-dense mdui-ripple">SEARCH</button>
+          </div>
+        </div>
+        <div class="mdui-container">
+          <div class="mdui-panel mdui-panel-gapless mdui-shadow-0" mdui-panel>
+            <div class="mdui-panel-item">
+              <div class="mdui-panel-item-header">Advanced Search</div>
+              <div class="mdui-panel-item-body">
+                <div class="filter-container">
+                  <label class="mdui-switch">
+                    <input type="checkbox" id="date-range-search" v-model="enableDateRangeSearch"/>
+                      <i class="mdui-switch-icon"></i>
+                      Filter date
+                  </label>
+                  <span v-if="enableDateRangeSearch" class="advanced-search-filter" >
+                    <span>from</span>
+                    <input type="date" id="date-range-from">
+                    <label for="date-range-from">to</label>
+                    <input type="date" id="date-range-from">
+                  </span>
+                </div>
+
+                <div class="filter-container">
+                  <label class="mdui-switch">
+                    <input type="checkbox" id="date-range-search" v-model="enableTagSearch"/>
+                      <i class="mdui-switch-icon"></i>
+                      Filter tag
+                  </label>
+                  <span v-if="enableTagSearch" class="advanced-search-filter" >
+                    <span>Click to set tag</span>
+                    <div>
+                      <div class="mdui-chip" v-for="tag in tags" @click="setTagSearch(tag)">
+                        <span class="mdui-chip-title">{{tag}}</span>
+                      </div>
+                    </div>
+                  </span>
+                </div>
+
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      </div>
+
       <div class="item-list-container">
       <ul class="item-list">
         <div v-for="record in recordList" >
@@ -231,7 +308,7 @@
                     <div class="mdui-card-primary-subtitle">{{record.timestamp}}</div>
                     <div class="mdui-card-primary-content">{{record.description}}</div>
                     <div class="tags">
-                      <div class="mdui-chip" v-for="tag in record.tags">
+                      <div class="mdui-chip" v-for="tag in record.tags" @click="setTagSearch(tag)">
                         <span class="mdui-chip-title">{{tag}}</span>
                       </div>
                       <span class="mdui-chip-title" style="opacity: 0;" v-if="record.tags.length < 1"></span>
@@ -247,15 +324,46 @@
         </div>
       </ul>
       </div>
+      
+      
+
       <div class="end-banner" v-if="atBottom" v-bind="dataSize"> - That's all, {{dataSize}} records in total. -</div>
+      
+      <div class="loading-cover mdui-typography" v-bind="loader" v-if="!loader.done">
+        <h2>Loading</h2>
+        <div class="mdui-progress" style="width: 80vw;">
+          <div class="mdui-progress-determinate" v-bind:style="loader.progressStyle"></div>
+        </div>
+        <h4>{{loader.message}}</h4>
+      </div>
+
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha256/0.9.0/sha256.min.js" integrity="sha512-szJ5FSo9hEmXXe7b5AUVtn/WnL8a5VofnFeYC2i2z03uS2LhAch7ewNLbl5flsEmTTimMN0enBZg/3sQ+YOSzQ==" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/gh/emn178/js-sha256/build/sha256.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mdui@1.0.0/dist/js/mdui.min.js"></script>
     <!-- development version, includes helpful console warnings -->
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script>
     (async () => {
-
+      function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+      }
+      var vapp ;
+      var loader = {
+            done: false,
+            progress: 0,
+            progressStyle: "width: 0%;",
+            message: ''
+          };
+      function setProgress(percentage, message) {
+        if(loader.done) return;
+        if(percentage >= 1.0) loader.done = true;
+        loader.progress = parseInt((percentage > 1 ? 1 : percentage) * 100.0);
+        // console.log(loader.progress, loader.message);
+        loader.message = message;
+        loader.progressStyle = `width: ${loader.progress}%;`;
+        //Vue.set(vapp, 'loader', loader);
+      }
 
       var examineBuilder = function (numberOfDigits = 5) {
         var examiner = function(value) {
@@ -267,12 +375,14 @@
         return examiner
       }
 
-      var mine = function (examiner, hasher, message) {
+      var mine = function (examiner, hasher, message, sp) {
         let nonce = Math.random().toString(16).replace('.','').substring(0,10)
-        let steps = 10000
+        let steps = 0
         while (!examiner(hasher(message+nonce))) {
           nonce = Math.random().toString(16).replace('.','').substring(0,10)
+          steps++
         }
+        console.log(`${steps} guesses to mine.`)
         return nonce;
       }
       var jsonFetch = async function(url) {
@@ -281,43 +391,9 @@
         return jsonResponse
       }
 
-      
-      statsJson = await jsonFetch(`/api/stats`)
-      console.log(statsJson)
+      var inputBarContent = "";
 
-      jsonResponse = await jsonFetch('/api/take-challenge')
-      console.log('Challenge taken.')
-      console.log(jsonResponse)
-      console.log('mining...')
-      var nonce = await mine(examineBuilder(5), sha256, jsonResponse.result)
-      console.log('solved.')
-      console.log(nonce)
-      console.log(sha256(jsonResponse.result + nonce))
-      console.log('fetching data...')
-      allDataJson = await jsonFetch(`/api/poll/${jsonResponse.result}/${nonce}`)
-      stats = await jsonFetch(`/api/stats`)
-      var resultList = allDataJson.result;
-      console.log(stats)
-      var maskNumber = 32;
-      console.log(allDataJson.result)
-      console.log(`${allDataJson.result.length} records in total.`)
-      var maskedList = resultList.slice(0,maskNumber);
-
-      var vapp;
-
-      window.addEventListener('scroll', function(ev) {
-          if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 48) {
-              // at the bottom of the page
-              console.log('bottom')
-              maskNumber += 16;
-              if(maskNumber > resultList.length) {
-                Vue.set(vapp, 'atBottom', true);
-                Vue.set(vapp, 'dataSize', resultList.length);
-              }
-              Vue.set(vapp, 'recordList', resultList.slice(0,maskNumber));
-
-          }
-      })
+     
       Vue.component('decent-money-number', {
         props: ['value'],
         methods: {
@@ -331,15 +407,96 @@
           <div class="mdui-card-primary-title" v-else>￥ {{floatRound(value / (100 * 1000 * 1000))}} m</div>
         `
       });
+      
+      
+      mdui.mutation();
+      
+      statsJson = await jsonFetch(`/api/stats`)
+      console.log(statsJson)
+      
+      var resultList = [];
+      var maskNumber = 32;
+      let allTagsJson = await jsonFetch(`/api/tags`)
+      var allTags = allTagsJson.result
+      var tags = allTagsJson.result
+      console.log(allTags)
+
+      var stats = await jsonFetch(`/api/stats`)
+      console.log(stats)
+
+      console.log('register app.')
       vapp = new Vue({
         el: "#appAnchor",
         data: {
           recordList: resultList.slice(0,maskNumber),
           atBottom: false,
           dataSize: resultList.length,
-          statsRecord: stats
+          statsRecord: stats,
+          inputBarContent: inputBarContent,
+          enableDateRangeSearch: false,
+          enableTagSearch: false,
+          loader: loader,
+          tags: tags
+        },
+        methods: {
+          updateSearchBar: function() {
+            if(this.inputBarContent.search(';') === -1) { // not formatted for sure 
+              this.inputBarContent = `Keywords: ${this.inputBarContent};`
+              inputBarContent = this.inputBarContent;
+            }
+          },
+          setTagSearch: function(value) {
+            console.log('set:', value)
+          }
         }
       });
+      setProgress(0.02, 'Initialized.');
+      async function pollRecords() {
+        setProgress(0.1, 'Taking challenge...');
+        jsonResponse = await jsonFetch('/api/take-challenge')
+        
+        console.log('Challenge taken.')
+        console.log(jsonResponse)
+        console.log('mining...')
+        setProgress(0.2, 'Solving challenge...');
+        await sleep(1000);
+        var nonce = await mine(examineBuilder(5), sha256, jsonResponse.result)
+        console.log('solved.')
+        console.log(nonce)
+        console.log(sha256(jsonResponse.result + nonce))
+        console.log('fetching data...')
+        setProgress(0.85, 'Polling finance records...');
+        allDataJson = await jsonFetch(`/api/poll/${jsonResponse.result}/${nonce}`)
+        resultList = allDataJson.result;
+        console.log(allDataJson.result)
+        console.log(`${allDataJson.result.length} records in total.`)
+        setProgress(0.9, 'Okay I get all data.');
+        await sleep(1000);
+        maskNumber = 32;
+        if(vapp !== null)
+          Vue.set(vapp, 'recordList', resultList.slice(0,maskNumber));
+        return resultList
+      }
+      
+      
+      
+      await pollRecords();
+      setProgress(1,'Done!')
+      mdui.mutation();
+      window.addEventListener('scroll', function(ev) {
+          if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 48) {
+              // at the bottom of the page
+              console.log('bottom')
+              maskNumber += 16;
+              if(maskNumber > resultList.length) {
+                Vue.set(vapp, 'atBottom', true);
+                Vue.set(vapp, 'dataSize', resultList.length);
+              }
+              Vue.set(vapp, 'recordList', resultList.slice(0,maskNumber));
+
+          }
+      })
+      
 
       
       
