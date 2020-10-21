@@ -20,7 +20,7 @@ def new_record():
     amount = request.form.get('amount')
     tags = request.form.get('tags')
     describtion = request.form.get('description')
-    if config.Server.admin_secret != admin_password:
+    if config.Server.admin_secret != admin_password and config.Server.api_key != admin_password:
         return '', 403
     new_record(FinanceData(amount, datetime.datetime.now(), tags, describtion))
     

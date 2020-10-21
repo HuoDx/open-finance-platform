@@ -51,7 +51,7 @@ class KeyWordFilter(IFilter):
     IDENTIFIER = 'KWF'
     def __init__(self, key_words):
         self.key_words = key_words
-        if(len(self.key_words) < 1) # error case; here we bypass this filter to make it more rubust.
+        if len(self.key_words) < 1: # error case; here we bypass this filter to make it more rubust.
             self._bypassed = True
     
     def filter(self, unfiltered_content: List[FinanceData]):
