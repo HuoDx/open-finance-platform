@@ -64,8 +64,11 @@ def poll_data(challenge, nonce):
     
 @backend_blueprint.route('/update-filter', methods=['POST'])
 def update_filter():
-    filter_string = request.form.get('filter-string','')
+    filter_string = request.json.get('filter-string','')
+    print(filter_string)
+    session.pop('serialized-filter')
     composed_filter: ComposedFilter = parse(filter_string)
+    print(composed_filter)
     session['serialized-filter'] = composed_filter.to_object()
     return jsonify({
         'status': 0,

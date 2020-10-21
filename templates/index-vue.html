@@ -229,7 +229,7 @@
         <div class="search-container">
           <div class="mdui-textfield search-textfield-container mdui-shadow-0">
             <input v-on:change="updateSearchBar()" v-model="inputBarContent" class="mdui-textfield-input search-textfield" type="text" placeholder="Search Finance Data"/>
-            <button class="mdui-btn mdui-btn-dense mdui-ripple">SEARCH</button>
+            <button class="mdui-btn mdui-btn-dense mdui-ripple" @click="search()">SEARCH</button>
           </div>
         </div>
         <div class="mdui-container">
@@ -245,9 +245,9 @@
                   </label>
                   <span v-if="enableDateRangeSearch" class="advanced-search-filter" >
                     <span>from</span>
-                    <input type="date" id="date-range-from">
+                    <input type="date" id="date-range-from" v-model="dateFromContent" @change="_updateOridinaryKey('From', dateFromContent)">
                     <label for="date-range-from">to</label>
-                    <input type="date" id="date-range-from">
+                    <input type="date" id="date-range-to" v-model="dateToContent" @change="_updateOridinaryKey('To', dateToContent)">
                   </span>
                 </div>
 
@@ -345,9 +345,34 @@
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script>
     (async () => {
+      function getVisible(originalString) {
+        return originalString.replace(/[\s]+/g, "")
+      }
+      function getExceptional(messageString, keys) {
+        var exceptional  = messageString;
+        for(let key of keys) {
+          let re = new RegExp(`${key}: ([^;]*); `)
+          exceptional = exceptional.replace(re, '')
+        }
+        return exceptional
+      }
+
+      function filter(messageString, key) {
+        let re = new RegExp(`${key}: ([^;]*);`)
+        let result = messageString.match(re)
+        return result === null ? null : result[1]
+      }
+
+      function replaceValue(messageString, newValue, key) {
+        let re = new RegExp(`${key}: ([^;]*);`)
+        let result = messageString.replace(re, `${key}: ${newValue};`)
+        return result
+      }
+
       function sleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
       }
+
       var vapp ;
       var loader = {
             done: false,
@@ -356,6 +381,10 @@
             message: ''
           };
       function setProgress(percentage, message) {
+        if(percentage < 1 && loader.done) {
+          console.log('reset progress.')
+          loader.done = false;
+        }
         if(loader.done) return;
         if(percentage >= 1.0) loader.done = true;
         loader.progress = parseInt((percentage > 1 ? 1 : percentage) * 100.0);
@@ -385,12 +414,25 @@
         console.log(`${steps} guesses to mine.`)
         return nonce;
       }
+
       var jsonFetch = async function(url) {
         let response = await fetch(url)
         let jsonResponse = await response.json()
         return jsonResponse
       }
 
+      async function postData(url, form) {
+        let result = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+            // 'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          redirect: 'follow', // manual, *follow, error
+          referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+          body: JSON.stringify(form)
+        })
+      }
       var inputBarContent = "";
 
      
@@ -425,6 +467,7 @@
       console.log(stats)
 
       console.log('register app.')
+
       vapp = new Vue({
         el: "#appAnchor",
         data: {
@@ -434,22 +477,49 @@
           statsRecord: stats,
           inputBarContent: inputBarContent,
           enableDateRangeSearch: false,
+          dateFromContent: null,
+          dateToContent: null,
           enableTagSearch: false,
           loader: loader,
           tags: tags
         },
         methods: {
+          _updateOridinaryKey: function(key, value) {
+            console.log(key, value)
+            if(filter(this.inputBarContent, key) === null)
+              this.inputBarContent += `${key}: ${value}; `
+            else this.inputBarContent = replaceValue(this.inputBarContent, value, key)
+          },
           updateSearchBar: function() {
-            if(this.inputBarContent.search(';') === -1) { // not formatted for sure 
-              this.inputBarContent = `Keywords: ${this.inputBarContent};`
-              inputBarContent = this.inputBarContent;
+            console.log(this.inputBarContent)
+            let exceptionalPart = getExceptional(this.inputBarContent, ['Keywords', 'Tag', 'From', 'To'])
+            this.inputBarContent = this.inputBarContent.replace(exceptionalPart, '') //  remove exceptional part first
+            console.log(this.inputBarContent)
+            console.log(exceptionalPart)
+            if(filter(this.inputBarContent, 'Keywords') === null && getVisible(exceptionalPart) !== '') { // not formatted for sure 
+
+              this.inputBarContent = `Keywords: ${getVisible(exceptionalPart)}; ` + this.inputBarContent
+            } else if (getVisible(exceptionalPart) !== ''){ // check whether there are exceptional parts.
+              // add content
+              let newContent = filter(this.inputBarContent, 'Keywords') + ' ' + getVisible(exceptionalPart)
+              console.log(newContent)
+              this.inputBarContent = replaceValue(this.inputBarContent, newContent, 'Keywords') // update the keywords field
+              
             }
+            
+            console.log('updated: ', this.inputBarContent)
           },
           setTagSearch: function(value) {
             console.log('set:', value)
+            this._updateOridinaryKey('Tag', value)
+          },
+          search: async function() {
+            await postData('/update-filter', {'filter-string': this.inputBarContent})
+            await pollRecords()
           }
         }
       });
+
       setProgress(0.02, 'Initialized.');
       async function pollRecords() {
         setProgress(0.1, 'Taking challenge...');
@@ -475,13 +545,14 @@
         maskNumber = 32;
         if(vapp !== null)
           Vue.set(vapp, 'recordList', resultList.slice(0,maskNumber));
+        setProgress(1,'Done!')
         return resultList
       }
       
       
       
       await pollRecords();
-      setProgress(1,'Done!')
+      
       mdui.mutation();
       window.addEventListener('scroll', function(ev) {
           if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 48) {

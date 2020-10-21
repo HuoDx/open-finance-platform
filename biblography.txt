@@ -5,3 +5,7 @@ Here are all articles/resources that provides help to this project.
 [3] https://vuejs.org
 [4] https://mdui.org/
 [5] https://stackoverflow.com/questions/11832914/round-to-at-most-2-decimal-places-only-if-necessary
+[6] https://stackoverflow.com/questions/24229262/match-non-printable-non-ascii-characters-and-remove-from-text
+[7] https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
+[8] https://regexr.com/
+[9] https://stackoverflow.com/questions/20001229/how-to-get-posted-json-in-flask

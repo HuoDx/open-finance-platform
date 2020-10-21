@@ -58,7 +58,7 @@ def parse(filter_string: str):
     # print('DEBUG', keywords_result)
     if keywords_result is not None:
         # start parsing keywords to construct the filter
-        keywords = keywords_result.split(',')
+        keywords = keywords_result.split()
         keyword_filter = KeyWordFilter(key_words=keywords)
         result_filter.add_filter(keyword_filter)
     

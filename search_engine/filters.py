@@ -51,16 +51,21 @@ class KeyWordFilter(IFilter):
     IDENTIFIER = 'KWF'
     def __init__(self, key_words):
         self.key_words = key_words
+        if(len(self.key_words) < 1) # error case; here we bypass this filter to make it more rubust.
+            self._bypassed = True
     
     def filter(self, unfiltered_content: List[FinanceData]):
         """
         filter(unfiltered_content: list of FinanceData>) -> filtered_content: list of FinanceData
         """
+        if self._bypassed:
+            return unfiltered_content
         output = []
         for key_word in self.key_words:
             for piece in unfiltered_content:
                 if key_word in piece.description:
                     output.append(piece)
+        
         return output
     
     def to_object(self):
