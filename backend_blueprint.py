@@ -43,7 +43,9 @@ def poll_data(challenge, nonce):
     filtered_content = obtain_all_data()
     
     if session.get('serialized-filter', None) is not None:
-        filtered_content = ComposedFilter.from_object(session['serialized-filter']).filter(filtered_content)
+        composed_filter = ComposedFilter.from_object(session['serialized-filter'])
+        print(composed_filter)
+        filtered_content = composed_filter.filter(filtered_content)
     
     global challenges
     if not challenge in challenges:
@@ -66,7 +68,11 @@ def poll_data(challenge, nonce):
 def update_filter():
     filter_string = request.json.get('filter-string','')
     print(filter_string)
-    session.pop('serialized-filter')
+    try:
+        session.clear()
+        session.pop('serialized-filter')
+    except KeyError:
+        pass
     composed_filter: ComposedFilter = parse(filter_string)
     print(composed_filter)
     session['serialized-filter'] = composed_filter.to_object()

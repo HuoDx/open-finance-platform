@@ -9,3 +9,4 @@ Here are all articles/resources that provides help to this project.
 [7] https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
 [8] https://regexr.com/
 [9] https://stackoverflow.com/questions/20001229/how-to-get-posted-json-in-flask
+[10] https://developer.mozilla.org/en-US/docs/Learn/Forms/HTML5_input_types

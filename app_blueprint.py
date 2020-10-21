@@ -15,11 +15,11 @@ def index():
     return send_file('templates/index-vue.html')
 
 @app_blueprint.route('/new-record', methods = ['POST'])
-def new_record():
-    admin_password = request.form.get('password')
-    amount = request.form.get('amount')
-    tags = request.form.get('tags')
-    describtion = request.form.get('description')
+def _new_record():
+    admin_password = request.json.get('password')
+    amount = int(float(request.json.get('amount')))
+    tags = request.json.get('tags')
+    describtion = request.json.get('description')
     if config.Server.admin_secret != admin_password and config.Server.api_key != admin_password:
         return '', 403
     new_record(FinanceData(amount, datetime.datetime.now(), tags, describtion))

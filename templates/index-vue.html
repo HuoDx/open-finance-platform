@@ -186,6 +186,12 @@
     .filter-container {
       margin: 8px;
     }
+    .dialog-container {
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
     </style>
 
 </head>
@@ -336,45 +342,44 @@
         </div>
         <h4>{{loader.message}}</h4>
       </div>
+      <button class="mdui-fab mdui-fab-fixed" style="z-index: 2000;" @click="popDialog()"><i class="mdui-icon material-icons">add</i></button>
       <div class="mdui-dialog" id="admin-dialog">
-        
-        <div class="mdui-container">
-          <h3>Add a record</h3>
+        <div class="mdui-dialog-title">Add a record</div>
+        <div class="mdui-dialog-content mdui-container dialog-container">
+
           <div class="mdui-textfield mdui-textfield-floating-label">
             <label class="mdui-textfield-label">Amount</label>
-            <input class="mdui-textfield-input" type="number"/>
+            <input class="mdui-textfield-input" type="number" v-model="admin.amount"/>
           </div>
-        </div>
 
-        <div class="mdui-container">
-          <div class="mdui-textarea mdui-textfield-floating-label">
+          <div class="mdui-textfield mdui-textfield-floating-label">
             <label class="mdui-textfield-label">Description</label>
-            <input class="mdui-textfield-input" type="text"/>
+            <input class="mdui-textfield-input" type="text" v-model="admin.description"/>
           </div>
-        </div>
 
-        <div class="mdui-container">
           <div class="mdui-textfield mdui-textfield-floating-label">
             <label class="mdui-textfield-label">Tags</label>
-            <input class="mdui-textfield-input" type="text"/>
+            <input class="mdui-textfield-input" type="text" v-model="admin.tags"/>
           </div>
-        </div>
 
-        <div class="mdui-container">
           <div class="mdui-textfield mdui-textfield-floating-label">
             <label class="mdui-textfield-label">Password</label>
-            <input class="mdui-textfield-input" type="password"/>
+            <input class="mdui-textfield-input" type="password" v-model="admin.password"/>
           </div>
-        </div>
 
+        </div>
+        <div class="mdui-dialog-actions">
+          <button class="mdui-btn mdui-ripple" mdui-dialog-cancel>cancel</button>
+          <button class="mdui-btn mdui-ripple" mdui-dialog-confirm @click="submitAdmin()">erase</button>
+        </div>
       </div>
     </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha256/0.9.0/sha256.min.js" integrity="sha512-szJ5FSo9hEmXXe7b5AUVtn/WnL8a5VofnFeYC2i2z03uS2LhAch7ewNLbl5flsEmTTimMN0enBZg/3sQ+YOSzQ==" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/gh/emn178/js-sha256/build/sha256.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mdui@1.0.0/dist/js/mdui.min.js"></script>
     <!-- development version, includes helpful console warnings -->
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script>
+    mdui.mutation();
     (async () => {
       function getVisible(originalString) {
         return originalString.replace(/[\s]+/g, "")
@@ -465,7 +470,7 @@
         })
       }
       var inputBarContent = "";
-
+      
      
       Vue.component('decent-money-number', {
         props: ['value'],
@@ -483,7 +488,6 @@
       
       
       mdui.mutation();
-      var dialog = mdui.Dialog('#admin-dialog',{modal: true})
       statsJson = await jsonFetch(`/api/stats`)
       console.log(statsJson)
       
@@ -493,7 +497,7 @@
       var allTags = allTagsJson.result
       var tags = allTagsJson.result
       console.log(allTags)
-
+      var dialog;
       var stats = await jsonFetch(`/api/stats`)
       console.log(stats)
 
@@ -512,7 +516,13 @@
           dateToContent: null,
           enableTagSearch: false,
           loader: loader,
-          tags: tags
+          tags: tags,
+          admin: {
+            tags: '',
+            amount: 0,
+            description: '',
+            password: ''
+          }
         },
         methods: {
           _updateOridinaryKey: function(key, value) {
@@ -546,6 +556,20 @@
           },
           search: async function() {
             await postData('/update-filter', {'filter-string': this.inputBarContent})
+            await pollRecords()
+          },
+          popDialog: function(){
+            mdui.mutation();
+            dialog = new mdui.Dialog('#admin-dialog',{modal: true})
+            dialog.open()
+          },
+          submitAdmin: async function() {
+            await postData('/new-record', {
+              'amount': this.admin.amount,
+              'tags': this.admin.tags.split('; '),
+              'description': this.admin.description,
+              'password': this.admin.password
+            })
             await pollRecords()
           }
         }
@@ -583,8 +607,8 @@
       
       
       await pollRecords();
-      var $ = mdui.$;
-      mdui.mutation();
+
+      
       window.addEventListener('scroll', function(ev) {
           if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 48) {
               // at the bottom of the page
@@ -604,6 +628,7 @@
       
       
     })();
+    
     </script>
 </body>
 
