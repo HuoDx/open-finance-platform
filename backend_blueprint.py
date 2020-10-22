@@ -8,12 +8,12 @@ from data.data_interactive_layer import obtain_all_data, obtain_stats, obtain_ta
 backend_blueprint = Blueprint('backend_blueprint', __name__)
 
 
-def test_challenge(original, part):
+def test_challenge(original, part, digits=4):
     global challenges
     if not original in challenges:
         return False
     else:
-        if sha256(bytes(original + part, encoding='ASCII')).hexdigest()[0:5].count('0') == 5:
+        if sha256(bytes(original + part, encoding='ASCII')).hexdigest()[0:digits].count('0') == digits:
             challenges.remove(original)
             return True
         return False
@@ -67,7 +67,7 @@ def poll_data(challenge, nonce):
 @backend_blueprint.route('/update-filter', methods=['POST'])
 def update_filter():
     filter_string = request.json.get('filter-string','')
-    print(filter_string)
+    print('Debug:', filter_string)
     try:
         session.clear()
         session.pop('serialized-filter')

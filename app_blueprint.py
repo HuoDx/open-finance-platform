@@ -23,4 +23,5 @@ def _new_record():
     if config.Server.admin_secret != admin_password and config.Server.api_key != admin_password:
         return '', 403
     new_record(FinanceData(amount, datetime.datetime.now(), tags, describtion))
+    return jsonify({'status': 0})
     

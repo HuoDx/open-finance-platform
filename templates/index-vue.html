@@ -585,7 +585,7 @@
         console.log('mining...')
         setProgress(0.2, 'Solving challenge...');
         await sleep(1000);
-        var nonce = await mine(examineBuilder(5), sha256, jsonResponse.result)
+        var nonce = await mine(examineBuilder(4), sha256, jsonResponse.result)
         console.log('solved.')
         console.log(nonce)
         console.log(sha256(jsonResponse.result + nonce))
@@ -601,6 +601,7 @@
         if(vapp !== null)
           Vue.set(vapp, 'recordList', resultList.slice(0,maskNumber));
         setProgress(1,'Done!')
+        mdui.mutation()
         return resultList
       }
       

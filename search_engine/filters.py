@@ -51,6 +51,7 @@ class KeyWordFilter(IFilter):
     IDENTIFIER = 'KWF'
     def __init__(self, key_words):
         self.key_words = key_words
+        self._bypassed = False # here we must set it to false so when `filter` is called there will certainly be this variable.
         if len(self.key_words) < 1: # error case; here we bypass this filter to make it more rubust.
             self._bypassed = True
     

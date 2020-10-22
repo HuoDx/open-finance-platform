@@ -51,11 +51,12 @@ def get_result_from_parser(value, parser):
 
 
 def parse(filter_string: str):
+    print('Parsing: ', filter_string)
     global keywords_parser, tag_parser, date_from_parser, date_to_parser
-    result_filter = ComposedFilter()
+    result_filter = ComposedFilter([])
     
     keywords_result:str = get_result_from_parser(filter_string, keywords_parser)
-    # print('DEBUG', keywords_result)
+    print('kw result:', keywords_result)
     if keywords_result is not None:
         # start parsing keywords to construct the filter
         keywords = keywords_result.split()
@@ -63,16 +64,17 @@ def parse(filter_string: str):
         result_filter.add_filter(keyword_filter)
     
     tag_result:str = get_result_from_parser(filter_string, tag_parser)
-    # print('DEBUG', tag_result)
+    print('tag result:', tag_result)
     if tag_result is not None:
         tag_filter = TagFilter(tag_result)
         result_filter.add_filter(tag_filter)
     
     date_from_result = get_result_from_parser(filter_string, date_from_parser)
     date_to_result = get_result_from_parser(filter_string, date_to_parser)
-    print('DEBUG', date_from_result, date_to_result)
+    print('Date from', date_from_result, 'to', date_to_result)
     if date_from_parser is not None or date_to_parser is not None:
         date_filter = DateRangeFilter(date_from_result, date_to_result)
         result_filter.add_filter(date_filter)
-        
+    
+    print('Parsed: ', result_filter)
     return result_filter

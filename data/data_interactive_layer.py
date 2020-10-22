@@ -59,6 +59,7 @@ def obtain_stats():
 def new_record(finance_data: FinanceData):
     with connection() as cursor:
         finance_data.to_sql(cursor)
+        print('SQL succeed.')
     global financial_records, tags, total_revenue, total_cost
     financial_records.append(finance_data)
     _update_tags(finance_data.tags)
