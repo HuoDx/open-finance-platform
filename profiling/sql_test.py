@@ -31,19 +31,21 @@ while case < size:
     scales.append(scale(case))
     
     st = time.perf_counter_ns()
-    for _ in range(scale(case)):
+    for _ in range(scale(case)//2):
         data_array.append(FinanceData(
-            random.randint(1,10000),
+            random.randint(1,2000),
             datetime.datetime.now(),
             tags = ['Revenue'],
             description='Auto generated'
             )
         )
 
-    for _ in range(scale(case)):
+    for _ in range(int(scale(case)/2.25)):
         data_array.append(FinanceData(
-            random.randint(-100000,-1),
+            random.randint(-5000,-1),
             datetime.datetime.now(),
+            tags = ['Cost'],
+            description="Buying paper."
             )
         )
     span = time.perf_counter_ns() - st

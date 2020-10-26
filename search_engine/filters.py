@@ -51,8 +51,10 @@ class KeyWordFilter(IFilter):
     IDENTIFIER = 'KWF'
     def __init__(self, key_words):
         self.key_words = key_words
-        self._bypassed = False # here we must set it to false so when `filter` is called there will certainly be this variable.
-        if len(self.key_words) < 1: # error case; here we bypass this filter to make it more rubust.
+        # here we must set it to false so when `filter` is called there will certainly be this variable.
+        self._bypassed = False 
+        if len(self.key_words) < 1: 
+            # error case; here we bypass this filter to make it more rubust.
             self._bypassed = True
     
     def filter(self, unfiltered_content: List[FinanceData]):
@@ -124,7 +126,13 @@ class DateRangeFilter(IFilter):
     def from_object(cls, data_object: dict):
         return DateRangeFilter(data_object.get('date-from'),data_object.get('date-to'),)
     def __repr__(self):
-        return '< filter date from "%s" to "%s" >'%(time.strftime("%Y-%m-%d", time.localtime(self.date_from)), time.strftime("%Y-%m-%d", time.localtime(self.date_to)))
+        return '< filter date from "%s" to "%s" >'%(
+            time.strftime("%Y-%m-%d", 
+                          time.localtime(self.date_from)), 
+            time.strftime("%Y-%m-%d", 
+                          time.localtime(self.date_to)
+                          )
+            )
 class ComposedFilter(IFilter):
     _filter_function_factory = {
         TagFilter.IDENTIFIER: TagFilter.from_object,

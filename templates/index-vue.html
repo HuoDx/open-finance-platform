@@ -192,6 +192,9 @@
       flex-direction: column;
       justify-content: center;
     }
+    .mdui-fab {
+      background-color: white;
+    }
     </style>
 
 </head>
@@ -598,8 +601,10 @@
         setProgress(0.9, 'Okay I get all data.');
         await sleep(1000);
         maskNumber = 32;
-        if(vapp !== null)
+        if(vapp !== null){
           Vue.set(vapp, 'recordList', resultList.slice(0,maskNumber));
+          if(resultList.length < maskNumber) Vue.set(vapp, 'atBottom', true);
+        }
         setProgress(1,'Done!')
         mdui.mutation()
         return resultList

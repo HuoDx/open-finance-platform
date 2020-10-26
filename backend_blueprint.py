@@ -1,14 +1,18 @@
-from flask import session, request, jsonify, Blueprint
-from search_engine.filters import ComposedFilter
 import os
 from hashlib import sha256
+from flask import session, request, jsonify, Blueprint
+from search_engine.filters import ComposedFilter
 from search_engine.filter_parser import parse
 from data.data_interactive_layer import obtain_all_data, obtain_stats, obtain_tags
 
 backend_blueprint = Blueprint('backend_blueprint', __name__)
 
+challenges = []
 
-def test_challenge(original, part, digits=4):
+def test_challenge(original, part, digits=4) -> bool:
+    '''
+    this examines if the challenge is valid
+    '''
     global challenges
     if not original in challenges:
         return False
@@ -18,8 +22,6 @@ def test_challenge(original, part, digits=4):
             return True
         return False
     
-challenges = []
-
 @backend_blueprint.route('/api/take-challenge')
 def take_challenge():
     global challenges
@@ -30,14 +32,6 @@ def take_challenge():
         'result': new_challenge
     })
     
-@backend_blueprint.route('/api/stats', methods = ['GET'])
-def stats():
-    total_cost, total_revenue = obtain_stats()
-    return jsonify({
-        'totalRevenueCent': total_revenue,
-        'totalCostCent': total_cost
-    })
-
 @backend_blueprint.route('/api/poll/<challenge>/<nonce>', methods = ['GET'])
 def poll_data(challenge, nonce):
     filtered_content = obtain_all_data()
@@ -64,11 +58,20 @@ def poll_data(challenge, nonce):
         'result': [_.to_object() for _ in filtered_content],
     })
     
+@backend_blueprint.route('/api/stats', methods = ['GET'])
+def stats():
+    total_cost, total_revenue = obtain_stats()
+    return jsonify({
+        'totalRevenueCent': total_revenue,
+        'totalCostCent': total_cost
+    })
+    
 @backend_blueprint.route('/update-filter', methods=['POST'])
 def update_filter():
     filter_string = request.json.get('filter-string','')
     print('Debug:', filter_string)
     try:
+        # remove the cached session
         session.clear()
         session.pop('serialized-filter')
     except KeyError:

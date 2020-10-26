@@ -25,6 +25,7 @@ def connection():
         print(e)
         conn.rollback()
     finally:
+        conn.commit()
         csr.close()
         postgreSQL_pool.putconn(conn)
     
