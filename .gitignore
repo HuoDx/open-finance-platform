@@ -131,3 +131,6 @@ dmypy.json
 
 # In-project stuff
 config.py
+
+#VSCode line counter
+.VSCodeCounter/**
