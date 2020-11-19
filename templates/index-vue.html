@@ -381,101 +381,33 @@
     <script src="https://cdn.jsdelivr.net/npm/mdui@1.0.0/dist/js/mdui.min.js"></script>
     <!-- development version, includes helpful console warnings -->
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="/static/js/utils.js"></script>
+    <script src="/static/js/filter.js"></script>
     <script>
     mdui.mutation();
-    (async () => {
-      function getVisible(originalString) {
-        return originalString.replace(/[\s]+/g, "")
-      }
-      function getExceptional(messageString, keys) {
-        var exceptional  = messageString;
-        for(let key of keys) {
-          let re = new RegExp(`${key}: ([^;]*); `)
-          exceptional = exceptional.replace(re, '')
+    var maskNumber = 32;
+    var vapp ;
+    var loader = {
+      done: false,
+      progress: 0,
+      progressStyle: "width: 0%;",
+      message: '',
+      setProgress: 
+        function (percentage, message) {
+          //if(percentage < 1 && loader.done) {
+          //  console.log('reset progress.')
+          //  loader.done = false;
+          //}
+          if(loader.done) return;
+          if(percentage >= 1.0) loader.done = true;
+          loader.progress = parseInt((percentage > 1 ? 1 : percentage) * 100.0);
+          // console.log(loader.progress, loader.message);
+          loader.message = message;
+          loader.progressStyle = `width: ${loader.progress}%;`;
+          //Vue.set(vapp, 'loader', loader);
         }
-        return exceptional
-      }
-
-      function filter(messageString, key) {
-        let re = new RegExp(`${key}: ([^;]*);`)
-        let result = messageString.match(re)
-        return result === null ? null : result[1]
-      }
-
-      function replaceValue(messageString, newValue, key) {
-        let re = new RegExp(`${key}: ([^;]*);`)
-        let result = messageString.replace(re, `${key}: ${newValue};`)
-        return result
-      }
-
-      function sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-      }
-
-      var vapp ;
-      var loader = {
-            done: false,
-            progress: 0,
-            progressStyle: "width: 0%;",
-            message: ''
-          };
-      function setProgress(percentage, message) {
-        if(percentage < 1 && loader.done) {
-          console.log('reset progress.')
-          loader.done = false;
-        }
-        if(loader.done) return;
-        if(percentage >= 1.0) loader.done = true;
-        loader.progress = parseInt((percentage > 1 ? 1 : percentage) * 100.0);
-        // console.log(loader.progress, loader.message);
-        loader.message = message;
-        loader.progressStyle = `width: ${loader.progress}%;`;
-        //Vue.set(vapp, 'loader', loader);
-      }
-
-      var examineBuilder = function (numberOfDigits = 5) {
-        var examiner = function(value) {
-          for(let ch of value.substring(0, numberOfDigits)) {
-            if(ch != '0') return false
-          }
-          return true
-        }
-        return examiner
-      }
-
-      var mine = function (examiner, hasher, message, sp) {
-        let nonce = Math.random().toString(16).replace('.','').substring(0,10)
-        let steps = 0
-        while (!examiner(hasher(message+nonce))) {
-          nonce = Math.random().toString(16).replace('.','').substring(0,10)
-          steps++
-        }
-        console.log(`${steps} guesses to mine.`)
-        return nonce;
-      }
-
-      var jsonFetch = async function(url) {
-        let response = await fetch(url)
-        let jsonResponse = await response.json()
-        return jsonResponse
-      }
-
-      async function postData(url, form) {
-        let result = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-            // 'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          redirect: 'follow', // manual, *follow, error
-          referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-          body: JSON.stringify(form)
-        })
-      }
-      var inputBarContent = "";
-      
-     
-      Vue.component('decent-money-number', {
+    };
+    Vue.component('decent-money-number', {
         props: ['value'],
         methods: {
           floatRound: function (amount) {
@@ -488,23 +420,25 @@
           <div class="mdui-card-primary-title" v-else>￥ {{floatRound(value / (100 * 1000 * 1000))}} m</div>
         `
       });
-      
-      
+    var inputBarContent = "";
+    var statsJson = null
+    var resultList = [];
+    var rawResultList = [];
+    var allTagsJson = {};
+    var tags = [];
+    var dialog;
+    var stats = {};
+    (async () => {
       mdui.mutation();
-      statsJson = await jsonFetch(`/api/stats`)
-      console.log(statsJson)
-      
-      var resultList = [];
-      var maskNumber = 32;
-      let allTagsJson = await jsonFetch(`/api/tags`)
-      var allTags = allTagsJson.result
-      var tags = allTagsJson.result
-      console.log(allTags)
-      var dialog;
-      var stats = await jsonFetch(`/api/stats`)
-      console.log(stats)
+      statsJson = await jsonFetch(`/api/stats`);
+      console.log(statsJson);
+      allTagsJson = await jsonFetch(`/api/tags`);
+      tags = allTagsJson.result;
+      console.log(tags);
+      stats = await jsonFetch(`/api/stats`);
+      console.log(stats);
 
-      console.log('register app.')
+      console.log('Start registering Application.');
 
       vapp = new Vue({
         el: "#appAnchor",
@@ -548,7 +482,6 @@
               let newContent = filter(this.inputBarContent, 'Keywords') + ' ' + getVisible(exceptionalPart)
               console.log(newContent)
               this.inputBarContent = replaceValue(this.inputBarContent, newContent, 'Keywords') // update the keywords field
-              
             }
             
             console.log('updated: ', this.inputBarContent)
@@ -558,8 +491,13 @@
             this._updateOridinaryKey('Tag', value)
           },
           search: async function() {
-            await postData('/update-filter', {'filter-string': this.inputBarContent})
-            await pollRecords()
+            // legacy version
+            /* await postData('/update-filter', {'filter-string': this.inputBarContent})
+            rawResultList = await pollRecords() */
+            // end legacy
+
+            resultList = buildParser(this.inputBarContent)(rawResultList);
+            updateMask();
           },
           popDialog: function(){
             mdui.mutation();
@@ -573,47 +511,50 @@
               'description': this.admin.description,
               'password': this.admin.password
             })
-            await pollRecords()
+            rawResultList = await pollRecords()
           }
         }
       });
 
-      setProgress(0.02, 'Initialized.');
+     loader.setProgress(0.02, 'Initialized.');
       async function pollRecords() {
-        setProgress(0.1, 'Taking challenge...');
+       loader.setProgress(0.1, 'Taking challenge...');
         jsonResponse = await jsonFetch('/api/take-challenge')
         
         console.log('Challenge taken.')
         console.log(jsonResponse)
         console.log('mining...')
-        setProgress(0.2, 'Solving challenge...');
+       loader.setProgress(0.2, 'Solving challenge...');
         await sleep(1000);
         var nonce = await mine(examineBuilder(4), sha256, jsonResponse.result)
         console.log('solved.')
         console.log(nonce)
         console.log(sha256(jsonResponse.result + nonce))
         console.log('fetching data...')
-        setProgress(0.85, 'Polling finance records...');
+       loader.setProgress(0.85, 'Polling finance records...');
         allDataJson = await jsonFetch(`/api/poll/${jsonResponse.result}/${nonce}`)
         resultList = allDataJson.result;
         console.log(allDataJson.result)
         console.log(`${allDataJson.result.length} records in total.`)
-        setProgress(0.9, 'Okay I get all data.');
+       loader.setProgress(0.9, 'Okay I get all data.');
         await sleep(1000);
         maskNumber = 32;
         if(vapp !== null){
           Vue.set(vapp, 'recordList', resultList.slice(0,maskNumber));
           if(resultList.length < maskNumber) Vue.set(vapp, 'atBottom', true);
         }
-        setProgress(1,'Done!')
+       loader.setProgress(1,'Done!')
         mdui.mutation()
         return resultList
       }
       
       
       
-      await pollRecords();
+      rawResultList = await pollRecords();
 
+      function updateMask() {
+        Vue.set(vapp, 'recordList', resultList.slice(0,maskNumber));
+      }
       
       window.addEventListener('scroll', function(ev) {
           if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 48) {
@@ -624,15 +565,10 @@
                 Vue.set(vapp, 'atBottom', true);
                 Vue.set(vapp, 'dataSize', resultList.length);
               }
-              Vue.set(vapp, 'recordList', resultList.slice(0,maskNumber));
+              updateMask();
 
           }
-      })
-      
-
-      
-      
-      
+      })  
     })();
     
     </script>
